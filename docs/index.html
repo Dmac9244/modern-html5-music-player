@@ -72,16 +72,11 @@
             z-index: 30;
             display: flex;
             align-items: stretch;
-            transition: transform 0.5s var(--ease-out-back);
             border-radius: 8px;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
             background: transparent;
             justify-content: center;
             font-family: var(--font-stack);
-        }
-
-        #music-player.player-hidden {
-             transform: translateX(calc(-100% + 42px));
         }
         
         #music-player::before {
@@ -301,9 +296,6 @@
             50% { opacity: 0.2; }
         }
 
-        #player-toggle-btn:hover { color: var(--highlight-color); }
-        .toggled-glow { color: var(--highlight-color) !important; }
-
         #audio-player {
             display: none;
             position: absolute;
@@ -409,18 +401,15 @@
 
         #playlist-modal {
             position: fixed;
-            bottom: 80px;
+            bottom: 90px;
             left: 10px;
             right: 10px;
             top: auto;
-            transform: translateY(10px);
+            transform: translateY(0);
             width: auto;
             max-width: none;
             z-index: 50;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease, transform 0.4s var(--ease-out-back), visibility 0.4s;
-            pointer-events: none;
+            opacity: 1;
             font-family: var(--font-stack);
         }
         #playlist-modal.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
@@ -554,25 +543,11 @@
 
         @media (hover: hover) and (pointer: fine) {
             .volume-controls:not(:hover) #volume-slider-input { width: 0; opacity: 0; }
-            .album-art-container:not(:hover) #playlist-btn { opacity: 0; }
             #music-player:not(:hover) input[type=range]::-webkit-slider-thumb { opacity: 0; }
         }
 
         @media (min-width: 768px) {
-            #music-player {
-                right: auto;
-                width: 320px;
-                justify-content: flex-start;
-            }
             .player-info-and-controls { width: 190px; }
-            #playlist-modal {
-                position: absolute;
-                bottom: 110%;
-                top: auto;
-                left: 0;
-                transform: translateY(10px);
-                width: 280px;
-            }
              #playlist-modal.show {
                 transform: translateY(0);
             }
@@ -588,17 +563,6 @@
                 transform: translateY(0);
             }
         }
-
-        @media (min-width: 900px) {
-            #music-player {
-                bottom: 20px;
-                left: 20px;
-                width: auto;
-            }
-            #music-player.player-hidden {
-                 transform: translateX(calc(-100% + 50px));
-            }
-        }
     </style>
 </head>
 <body>
@@ -609,7 +573,6 @@
             <div id="player-album-bg"></div>
             <div class="album-art-container">
                 <img id="album-art" src="https://placehold.co/40x40/89ddff/0d1126?text=?" alt="Album Art">
-                <button id="playlist-btn" title="Playlist" aria-label="Open Playlist"><i class="fas fa-list-ol"></i></button>
             </div>
             <div class="player-info-and-controls">
                 <div class="song-info">
@@ -638,9 +601,9 @@
                 </div>
             </div>
         </div>
-        <button id="player-toggle-btn" title="Toggle Player" aria-label="Show or hide music player">
+        <div id="player-toggle-btn" title="Toggle Player" aria-label="Show or hide music player">
             <i class="fas fa-music"></i>
-        </button>
+        </div>
         <div id="song-notification-toast" role="alert" aria-live="polite">
             <img id="toast-album-art" src="" alt="">
             <div>
@@ -659,11 +622,10 @@
 
                     <div class="modal-header-top">
                         <h3 id="playlist-modal-title">Playlist</h3>
-                        <div style="display:flex; align-items:center; margin-left:auto; margin-right:15px; gap:8px;">
+                        <div style="display:flex; align-items:center; margin-left:auto; gap:8px;">
                             <button id="shortcuts-btn" title="Keyboard Shortcuts" aria-label="Show shortcuts"><i class="fas fa-question-circle"></i></button>
                             <button id="settings-btn" title="Settings" aria-label="Settings"><i class="fas fa-cog"></i></button>
                         </div>
-                        <button class="modal-close-btn" aria-label="Close Playlist">&times;</button>
                     </div>
                     <div class="search-row">
                         <input type="text" id="playlist-search" placeholder="Search..." aria-label="Search playlist">
@@ -1005,12 +967,7 @@
                         player.analyserNode.getByteFrequencyData(targetFrequencies);
                     }
                 
-                    let barWidth;
-                    if (player.dom.toggleBtn && canvas.parentElement === player.dom.toggleBtn) {
-                        barWidth = (canvas.width / bufferLength) * 2.5; 
-                    } else {
-                        barWidth = (canvas.width / bufferLength) * 1.5; 
-                    }
+                    let barWidth = (canvas.width / bufferLength) * 2.5;
 
                     let x = 0;
                     for (let i = 0; i < bufferLength; i++) {
@@ -1188,18 +1145,7 @@
                     else player.audio.pause();
                 };
 
-                if (player.dom.toggleBtn) {
-                    player.dom.toggleBtn.addEventListener('click', () => {
-                        const isHidden = player.dom.player.classList.toggle('player-hidden');
-                        if (playerConfig.enableVisualizer && player.dom.visualizerCanvas) {
-                            if (isHidden) {
-                                player.dom.toggleBtn.appendChild(player.dom.visualizerCanvas);
-                            } else {
-                                player.dom.playerBody.insertBefore(player.dom.visualizerCanvas, player.dom.playerBody.firstChild);
-                            }
-                        }
-                    });
-                }
+                player.dom.playerBody.insertBefore(player.dom.visualizerCanvas, player.dom.playerBody.firstChild);
                 
                 if(player.dom.playPauseBtn) player.dom.playPauseBtn.addEventListener('click', togglePlay);
                 if(playerConfig.enableLikeSystem && player.dom.likeBtn) player.dom.likeBtn.addEventListener('click', () => toggleFavorite(player.playlist[player.currentTrack].url));
@@ -1271,7 +1217,7 @@
                         player.dom.albumArt.classList.add('spinning');
                         player.dom.albumArt.classList.add('playing-glow');
                     }
-                    if(player.dom.toggleBtn) player.dom.toggleBtn.classList.add('is-playing');
+                    player.dom.toggleBtn.classList.add('is-playing');
                     if(player.dom.playlistContainer && player.dom.playlistContainer.children[player.currentTrack]) {
                         const playingRow = player.dom.playlistContainer.children[player.currentTrack];
                         if (playingRow) {
@@ -1293,7 +1239,7 @@
                         player.dom.albumArt.classList.remove('spinning');
                         player.dom.albumArt.classList.remove('playing-glow');
                     }
-                    if(player.dom.toggleBtn) player.dom.toggleBtn.classList.remove('is-playing');
+                    player.dom.toggleBtn.classList.remove('is-playing');
                     if(player.dom.playlistContainer && player.dom.playlistContainer.children[player.currentTrack]) {
                         const playingRow = player.dom.playlistContainer.children[player.currentTrack];
                         if (playingRow) {
@@ -1385,17 +1331,6 @@
                     else icon.className = 'fas fa-volume-mute';
                 });
 
-                function togglePlaylistModal() {
-                    if (isPlaylistToggling) return;
-                    if (!player.dom.playlistModal) return;
-                    isPlaylistToggling = true;
-                    const isOpening = !player.dom.playlistModal.classList.contains('show');
-                    if (isOpening && localStorage.getItem('oss_music_player_promo_seen') !== 'true') localStorage.setItem('oss_music_player_promo_seen', 'true');
-                    player.dom.playlistModal.classList.toggle('show');
-                    if (player.dom.settingsModal && player.dom.settingsModal.classList.contains('show')) player.dom.settingsModal.classList.remove('show');
-                    setTimeout(() => isPlaylistToggling = false, 400);
-                }
-
                 function toggleSettingsModal() {
                     if (!player.dom.settingsModal) return;
                     player.dom.settingsModal.classList.toggle('show');
@@ -1457,7 +1392,6 @@
                                 populatePlaylistModal();
                             } else {
                                 loadTrack(originalIndex, true); 
-                                if(player.dom.playlistModal && player.dom.playlistModal.classList.contains('show')) togglePlaylistModal();
                             }
                         });
                         
@@ -1476,13 +1410,6 @@
                         const playingImg = player.dom.playlistContainer.querySelector('.playlist-song.playing img');
                         if (playingImg) playingImg.classList.add('spinning');
                     }
-                }
-                
-                if(player.dom.playlistBtn) player.dom.playlistBtn.addEventListener('click', togglePlaylistModal);
-                if(player.dom.playlistToggleBtnMain) player.dom.playlistToggleBtnMain.addEventListener('click', togglePlaylistModal);
-                if(player.dom.playlistModal) {
-                    const closeBtn = player.dom.playlistModal.querySelector('.modal-close-btn');
-                    if(closeBtn) closeBtn.addEventListener('click', togglePlaylistModal);
                 }
 
                 if(player.dom.shortcutsBtn) {
@@ -1514,12 +1441,6 @@
                 }
 
                 document.addEventListener('click', (e) => {
-                    if (player.dom.playlistModal && player.dom.playlistModal.classList.contains('show')) {
-                        const modalContent = player.dom.playlistModal.querySelector('.modal-content');
-                        if(modalContent && !modalContent.contains(e.target) && !e.target.closest('.album-art-container') && !e.target.closest('#playlist-toggle-btn-main') && !e.target.closest('.queue-icon') && !e.target.closest('#settings-btn')) {
-                            togglePlaylistModal();
-                        }
-                    }
                     if (player.dom.settingsModal && player.dom.settingsModal.classList.contains('show')) {
                         const modalContent = player.dom.settingsModal.querySelector('.modal-content');
                         if(modalContent && !modalContent.contains(e.target) && !e.target.closest('#settings-btn')) {
@@ -1560,7 +1481,7 @@
                 }
                 
                 function initializePlayer() {
-                    if(playerConfig.enableVisualizer && player.dom.toggleBtn && player.dom.visualizerCanvas) player.dom.toggleBtn.appendChild(player.dom.visualizerCanvas);
+                    player.dom.toggleBtn.appendChild(player.dom.visualizerCanvas);
                     if(playerConfig.enableVisualizer && player.dom.playerBody && player.dom.visualizerCanvas) player.dom.playerBody.insertBefore(player.dom.visualizerCanvas, player.dom.playerBody.firstChild);
 
                     setupThemeSwitcher();
