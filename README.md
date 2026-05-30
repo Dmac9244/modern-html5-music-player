@@ -1,3 +1,6 @@
+Forked and cloned to modify behavior of the embedded player to function more as an in-line playlist with website text.
+
+
 # 🎵 Modern HTML5 Music Player
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
